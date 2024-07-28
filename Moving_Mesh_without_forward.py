@@ -11,7 +11,6 @@ nWallNodes = len(wallNodes)
 #参数
 lamda = 1      #波长
 c = 0.1        #波速
-v = -0.2       #游动速度
 T = 2.0        #周期
 t = 0          #起始时间
 dt = 0.5       #时间间隔
@@ -27,7 +26,7 @@ while t < 10:
     # 对物面点进行变形
     for i in range(nWallNodes):
         wall_index = wallNodes[i] - 1
-        xCoord_new[wall_index] = xCoord[wall_index] + v * t
+        xCoord_new[wall_index] = xCoord[wall_index]
     nose_x = min(xCoord_new[wallNodes-1])
 
     for i in range(nWallNodes):
@@ -44,7 +43,7 @@ while t < 10:
     #锚点，远场边界点固定，物面边界点运动
     anchor_ids = np.concatenate((wallNodes -1 , farwallNodes - 1))
     wallCoord_new = np.concatenate((xCoord_new[wallNodes-1] , yCoord_new[wallNodes - 1]) ,axis=1)    
-    farwallCoord_new = np.concatenate(([Coord[farwallNodes-1,0] + v * t] , [Coord[farwallNodes-1,1]]) ,axis=0)
+    farwallCoord_new = np.concatenate(([Coord[farwallNodes-1,0]] , [Coord[farwallNodes-1,1]]) ,axis=0)
     anchors = np.concatenate((wallCoord_new , farwallCoord_new.T))
     faces = []
     for i in range(nNodes):
