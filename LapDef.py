@@ -54,13 +54,18 @@ class LaplacianDeformation:
         Ls = coo_matrix((data, (I, J)), shape=(n+k, n)).todense()
         return Ls
 
-    def solve(self, anchors, anchor_ids):
-        k = anchor_ids.shape[0]
-        #节点数量
-        n = self.vps.shape[0]
+    def get_delta(self , anchor_ids):
         Ls = self.get_Ls_matrix(anchor_ids)
         # print(Ls)
         delta = Ls.dot(self.vps) # n+k, dim
+        return Ls , delta
+    
+    def solve(self, anchors, anchor_ids , Ls=None , delta=None):
+        k = anchor_ids.shape[0]
+        #节点数量
+        n = self.vps.shape[0]
+        if Ls is None or delta is None:
+            Ls , delta = self.get_delta(anchor_ids)
         # print(delta.shape);exit()
         # 为后k行的原始顶点坐标修改为anchor的坐标（即修改为人为指定的已知条件）
         for i in range(k):

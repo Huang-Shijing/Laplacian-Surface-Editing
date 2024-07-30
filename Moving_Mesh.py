@@ -40,25 +40,30 @@ while t < 10:
         B = A * np.sin(2 * np.pi / lamda * (x - c * t))
         dy[i,0] = B[0]
         yCoord_new[wall_index] = yCoord[wall_index] + B[0]
+    
+    if t == 0.5:
+        # 计算网格的邻接关系
+        faces = []
+        for i in range(nNodes):
+            nerb = []
+            for j in range(len(Grid)):
+                if Grid[j,0]  == i + 1:
+                    nerb.append(Grid[j,1] - 1)
+                elif Grid[j,1]  == i + 1:
+                    nerb.append(Grid[j,0] - 1)
+            nerb.sort()
+            faces.append(nerb)
 
-    #锚点，远场边界点固定，物面边界点运动
-    anchor_ids = np.concatenate((wallNodes -1 , farwallNodes - 1))
+        #锚点，远场边界点固定，物面边界点运动
+        anchor_ids = np.concatenate((wallNodes -1 , farwallNodes - 1))
+        model = LaplacianDeformation(Coord, faces)
+        Ls , delta = model.get_delta(anchor_ids)
+
     wallCoord_new = np.concatenate((xCoord_new[wallNodes-1] , yCoord_new[wallNodes - 1]) ,axis=1)    
     farwallCoord_new = np.concatenate(([Coord[farwallNodes-1,0] + v * t] , [Coord[farwallNodes-1,1]]) ,axis=0)
+    #只有wallCoord_new会改变，其他不会
     anchors = np.concatenate((wallCoord_new , farwallCoord_new.T))
-    faces = []
-    for i in range(nNodes):
-        nerb = []
-        for j in range(len(Grid)):
-            if Grid[j,0]  == i + 1:
-                nerb.append(Grid[j,1] - 1)
-            elif Grid[j,1]  == i + 1:
-                nerb.append(Grid[j,0] - 1)
-        nerb.sort()
-        faces.append(nerb)
-
-    model = LaplacianDeformation(Coord, faces)
-    new_pnts = model.solve(anchors, anchor_ids)
+    new_pnts = model.solve(anchors, anchor_ids , Ls , delta)
 
     # 绘制网格
     plot_grid(Grid, new_pnts[:, 0], new_pnts[:, 1], nose_x)
